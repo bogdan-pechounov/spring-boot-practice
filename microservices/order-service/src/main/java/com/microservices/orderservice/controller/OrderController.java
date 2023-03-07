@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import com.microservices.orderservice.dto.OrderRequest;
 import com.microservices.orderservice.service.OrderService;
 
@@ -21,8 +21,13 @@ public class OrderController {
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
+  @CircuitBreaker(name = "inventory", fallbackMethod = "fallbackMethod")
   public String placeOrder(@RequestBody OrderRequest orderRequest) {
     orderService.placeOrder(orderRequest);
     return "Order placed successfully";
+  }
+
+  public String fallbackMethod(OrderRequest orderRequest, RuntimeException runtimeException) {
+    return "Something went wrong";
   }
 }
